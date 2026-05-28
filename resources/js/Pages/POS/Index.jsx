@@ -14,6 +14,30 @@ function integerValue(value, min = 0) {
     return Math.max(min, Number.parseInt(digits, 10));
 }
 
+function formatInteger(value) {
+    return new Intl.NumberFormat('id-ID').format(Number(value || 0));
+}
+
+function moneyInputValue(value) {
+    const digits = String(value ?? '').replace(/[^\d]/g, '').replace(/^0+(?=\d)/, '');
+
+    if (digits === '') {
+        return '';
+    }
+
+    return formatInteger(Number.parseInt(digits, 10));
+}
+
+function quantityInputValue(value) {
+    const digits = String(value ?? '').replace(/[^\d]/g, '').replace(/^0+(?=\d)/, '');
+
+    if (digits === '') {
+        return '';
+    }
+
+    return String(Math.max(1, Number.parseInt(digits, 10)));
+}
+
 function blockNonIntegerKey(event) {
     if (['e', 'E', '+', '-', '.', ','].includes(event.key)) {
         event.preventDefault();
@@ -25,8 +49,8 @@ export default function POSIndex({ products, services, customers }) {
     const [cart, setCart] = useState([]);
     const { data, setData, post, processing, errors, transform } = useForm({
         customer_id: '',
-        discount: 0,
-        paid_amount: 0,
+        discount: '',
+        paid_amount: '',
         payment_method: 'cash',
         payment_reference: '',
         notes: '',
@@ -39,17 +63,17 @@ export default function POSIndex({ products, services, customers }) {
     ], [products, services]);
 
     const filtered = catalog.filter((item) => `${item.name} ${item.code} ${item.barcode || ''}`.toLowerCase().includes(query.toLowerCase())).slice(0, 80);
-    const subtotal = cart.reduce((sum, item) => sum + Math.max(0, item.quantity * item.unit_price - item.discount), 0);
-    const total = Math.max(0, subtotal - Number(data.discount || 0));
-    const change = Math.max(0, Number(data.paid_amount || 0) - total);
-    const due = Math.max(0, total - Number(data.paid_amount || 0));
+    const subtotal = cart.reduce((sum, item) => sum + Math.max(0, integerValue(item.quantity, 1) * integerValue(item.unit_price) - integerValue(item.discount)), 0);
+    const total = Math.max(0, subtotal - integerValue(data.discount));
+    const change = Math.max(0, integerValue(data.paid_amount) - total);
+    const due = Math.max(0, total - integerValue(data.paid_amount));
 
     function addItem(item) {
         setCart((current) => {
             const key = `${item.type}-${item.id}`;
             const existing = current.find((line) => line.key === key);
             if (existing) {
-                return current.map((line) => line.key === key ? { ...line, quantity: Number(line.quantity) + 1 } : line);
+                return current.map((line) => line.key === key ? { ...line, quantity: String(integerValue(line.quantity, 1) + 1) } : line);
             }
             return [...current, {
                 key,
@@ -57,9 +81,9 @@ export default function POSIndex({ products, services, customers }) {
                 id: item.id,
                 name: item.name,
                 unit: item.unit,
-                quantity: 1,
-                unit_price: Number(item.price),
-                discount: 0,
+                quantity: '1',
+                unit_price: moneyInputValue(item.price),
+                discount: '',
             }];
         });
     }
@@ -70,7 +94,17 @@ export default function POSIndex({ products, services, customers }) {
 
     function submit(e) {
         e.preventDefault();
-        transform((form) => ({ ...form, items: cart }));
+        transform((form) => ({
+            ...form,
+            discount: integerValue(form.discount),
+            paid_amount: integerValue(form.paid_amount),
+            items: cart.map((item) => ({
+                ...item,
+                quantity: integerValue(item.quantity, 1),
+                unit_price: integerValue(item.unit_price),
+                discount: integerValue(item.discount),
+            })),
+        }));
         post('/pos/sales', {
             preserveScroll: true,
             onBefore: () => cart.length > 0,
@@ -130,33 +164,32 @@ export default function POSIndex({ products, services, customers }) {
                                                 inputMode="numeric"
                                                 value={line.quantity}
                                                 onKeyDown={blockNonIntegerKey}
-                                                onChange={(e) => updateLine(line.key, { quantity: integerValue(e.target.value, 1) })}
+                                                onChange={(e) => updateLine(line.key, { quantity: quantityInputValue(e.target.value) })}
+                                                onBlur={() => updateLine(line.key, { quantity: line.quantity === '' ? '1' : quantityInputValue(line.quantity) })}
                                             />
                                         </FieldLabel>
                                         <FieldLabel label="Harga" help="Harga jual per satuan untuk item ini. Bisa diubah manual jika ada harga khusus.">
                                             <TextInput
-                                                type="number"
-                                                min="0"
-                                                step="1"
+                                                type="text"
                                                 inputMode="numeric"
                                                 value={line.unit_price}
                                                 onKeyDown={blockNonIntegerKey}
-                                                onChange={(e) => updateLine(line.key, { unit_price: integerValue(e.target.value) })}
+                                                onChange={(e) => updateLine(line.key, { unit_price: moneyInputValue(e.target.value) })}
+                                                onBlur={() => updateLine(line.key, { unit_price: line.unit_price === '' ? '0' : moneyInputValue(line.unit_price) })}
                                             />
                                         </FieldLabel>
                                         <FieldLabel label="Diskon" help="Potongan khusus untuk item ini saja. Nilainya mengurangi subtotal baris item, bukan total seluruh nota.">
                                             <TextInput
-                                                type="number"
-                                                min="0"
-                                                step="1"
+                                                type="text"
                                                 inputMode="numeric"
                                                 value={line.discount}
                                                 onKeyDown={blockNonIntegerKey}
-                                                onChange={(e) => updateLine(line.key, { discount: integerValue(e.target.value) })}
+                                                onChange={(e) => updateLine(line.key, { discount: moneyInputValue(e.target.value) })}
+                                                onBlur={() => updateLine(line.key, { discount: line.discount === '' ? '0' : moneyInputValue(line.discount) })}
                                             />
                                         </FieldLabel>
                                     </div>
-                                    <p className="mt-1 text-right text-xs font-bold"><span className="mr-1 text-[10px] font-medium text-[var(--atk-muted)]">Subtotal item</span>{rupiah(line.quantity * line.unit_price - line.discount)}</p>
+                                    <p className="mt-1 text-right text-xs font-bold"><span className="mr-1 text-[10px] font-medium text-[var(--atk-muted)]">Subtotal item</span>{rupiah(integerValue(line.quantity, 1) * integerValue(line.unit_price) - integerValue(line.discount))}</p>
                                 </div>
                             ))}
                             {cart.length === 0 ? <p className="rounded-lg border border-dashed border-[var(--atk-border)] py-8 text-center text-[11px] text-[var(--atk-muted)]">Cart masih kosong.</p> : null}
@@ -164,26 +197,24 @@ export default function POSIndex({ products, services, customers }) {
                         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                             <FieldLabel label="Diskon nota" help="Potongan untuk total seluruh transaksi setelah semua subtotal item dijumlahkan. Cocok untuk promo toko, pembulatan, atau diskon belanja keseluruhan.">
                                 <TextInput
-                                    type="number"
-                                    min="0"
-                                    step="1"
+                                    type="text"
                                     inputMode="numeric"
                                     placeholder="0"
                                     value={data.discount}
                                     onKeyDown={blockNonIntegerKey}
-                                    onChange={(e) => setData('discount', integerValue(e.target.value))}
+                                    onChange={(e) => setData('discount', moneyInputValue(e.target.value))}
+                                    onBlur={() => setData('discount', data.discount === '' ? '0' : moneyInputValue(data.discount))}
                                 />
                             </FieldLabel>
                             <FieldLabel label="Nominal dibayar" help="Jumlah uang yang diterima dari pelanggan. Jika kurang dari total, sisanya tercatat sebagai piutang.">
                                 <TextInput
-                                    type="number"
-                                    min="0"
-                                    step="1"
+                                    type="text"
                                     inputMode="numeric"
                                     placeholder="0"
                                     value={data.paid_amount}
                                     onKeyDown={blockNonIntegerKey}
-                                    onChange={(e) => setData('paid_amount', integerValue(e.target.value))}
+                                    onChange={(e) => setData('paid_amount', moneyInputValue(e.target.value))}
+                                    onBlur={() => setData('paid_amount', data.paid_amount === '' ? '0' : moneyInputValue(data.paid_amount))}
                                 />
                             </FieldLabel>
                             <FieldLabel label="Metode bayar" help="Pilih cara pembayaran utama: tunai, transfer, QRIS, atau tempo untuk transaksi belum lunas.">
