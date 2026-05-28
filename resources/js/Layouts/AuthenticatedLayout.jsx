@@ -76,15 +76,26 @@ export default function AuthenticatedLayout({ children }) {
                         </div>
                     </div>
                 </header>
-                {mobileMenuOpen ? (
-                    <div className="fixed inset-0 z-40 lg:hidden">
+                <div
+                    className={`fixed inset-0 z-40 lg:hidden ${
+                        mobileMenuOpen ? 'pointer-events-auto' : 'pointer-events-none'
+                    }`}
+                    aria-hidden={!mobileMenuOpen}
+                >
                         <button
                             type="button"
-                            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                            className={`absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ease-out ${
+                                mobileMenuOpen ? 'opacity-100' : 'opacity-0'
+                            }`}
                             onClick={() => setMobileMenuOpen(false)}
                             aria-label="Tutup menu"
+                            tabIndex={mobileMenuOpen ? 0 : -1}
                         />
-                        <aside className="relative z-10 flex h-full w-72 max-w-[85vw] flex-col border-r border-[var(--atk-border)] bg-[var(--atk-surface-strong)] p-3 shadow-2xl shadow-black/40">
+                        <aside
+                            className={`relative z-10 flex h-full w-72 max-w-[85vw] flex-col border-r border-[var(--atk-border)] bg-[var(--atk-surface-strong)] p-3 shadow-2xl shadow-black/40 transition-transform duration-300 ease-out will-change-transform ${
+                                mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+                            }`}
+                        >
                             <div className="mb-3 flex items-center justify-between gap-2">
                                 <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="flex min-w-0 items-center rounded-xl bg-violet-500/15 px-2 py-2 ring-1 ring-violet-400/20">
                                     <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-600 text-xs font-bold text-white">ATK</div>
@@ -98,6 +109,7 @@ export default function AuthenticatedLayout({ children }) {
                                     onClick={() => setMobileMenuOpen(false)}
                                     className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[var(--atk-border)]"
                                     aria-label="Tutup menu"
+                                    tabIndex={mobileMenuOpen ? 0 : -1}
                                 >
                                     <X className="h-5 w-5" />
                                 </button>
@@ -108,6 +120,7 @@ export default function AuthenticatedLayout({ children }) {
                                         key={href}
                                         href={href}
                                         onClick={() => setMobileMenuOpen(false)}
+                                        tabIndex={mobileMenuOpen ? 0 : -1}
                                         className={`flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition ${current === href || current.startsWith(`${href}/`) ? 'bg-violet-600 text-white' : 'text-[var(--atk-text)] hover:bg-black/5 dark:hover:bg-white/5'}`}
                                     >
                                         <Icon className="mr-2 h-4 w-4" />
@@ -116,8 +129,7 @@ export default function AuthenticatedLayout({ children }) {
                                 ))}
                             </nav>
                         </aside>
-                    </div>
-                ) : null}
+                </div>
                 <main className="p-3">
                     <Flash />
                     {children}
