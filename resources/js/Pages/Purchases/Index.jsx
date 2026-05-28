@@ -1,6 +1,6 @@
 import { Head, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '../../Layouts/AuthenticatedLayout';
-import { Button, Card, DenseTable, PageHeader, Select, TextInput, dateTime, rupiah } from '../../Components/UI';
+import { Button, Card, DenseTable, FieldLabel, PageHeader, Select, TextInput, dateTime, rupiah } from '../../Components/UI';
 
 export default function PurchasesIndex({ suppliers, products, purchases }) {
     const purchase = useForm({
@@ -18,32 +18,52 @@ export default function PurchasesIndex({ suppliers, products, purchases }) {
         <AuthenticatedLayout>
             <Head title="Pembelian" />
             <PageHeader title="Pembelian & Supplier" description="Input pembelian barang, stok otomatis bertambah, hutang supplier tercatat." />
-            <div className="grid gap-3 xl:grid-cols-[22rem_1fr]">
+            <div className="grid min-w-0 gap-3 xl:grid-cols-[22rem_minmax(0,1fr)]">
                 <Card>
                     <h2 className="mb-2 text-sm font-semibold">Tambah Pembelian</h2>
                     <form onSubmit={(e) => { e.preventDefault(); purchase.post('/purchases', { onSuccess: () => purchase.reset('quantity', 'unit_cost', 'extra_cost', 'paid_amount', 'reference_number') }); }} className="space-y-2">
-                        <Select value={purchase.data.supplier_id} onChange={(e) => purchase.setData('supplier_id', e.target.value)}>
-                            <option value="">Tanpa supplier</option>
-                            {suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-                        </Select>
-                        <Select value={purchase.data.product_id} onChange={(e) => purchase.setData('product_id', e.target.value)}>
-                            {products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
-                        </Select>
-                        <div className="grid grid-cols-2 gap-2">
-                            <TextInput type="number" value={purchase.data.quantity} onChange={(e) => purchase.setData('quantity', Number(e.target.value))} placeholder="Qty" />
-                            <TextInput type="number" value={purchase.data.unit_cost} onChange={(e) => purchase.setData('unit_cost', Number(e.target.value))} placeholder="Harga beli" />
-                            <TextInput type="number" value={purchase.data.extra_cost} onChange={(e) => purchase.setData('extra_cost', Number(e.target.value))} placeholder="Biaya tambahan" />
-                            <TextInput type="number" value={purchase.data.paid_amount} onChange={(e) => purchase.setData('paid_amount', Number(e.target.value))} placeholder="Dibayar" />
+                        <FieldLabel label="Supplier" help="Pilih pemasok barang. Kosongkan jika pembelian tidak perlu dikaitkan ke supplier tertentu.">
+                            <Select value={purchase.data.supplier_id} onChange={(e) => purchase.setData('supplier_id', e.target.value)}>
+                                <option value="">Tanpa supplier</option>
+                                {suppliers.map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
+                            </Select>
+                        </FieldLabel>
+                        <FieldLabel label="Produk" help="Produk yang dibeli. Saat pembelian disimpan, stok produk ini otomatis bertambah.">
+                            <Select value={purchase.data.product_id} onChange={(e) => purchase.setData('product_id', e.target.value)}>
+                                {products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                            </Select>
+                        </FieldLabel>
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                            <FieldLabel label="Qty beli" help="Jumlah barang yang dibeli dan akan ditambahkan ke stok.">
+                                <TextInput type="number" value={purchase.data.quantity} onChange={(e) => purchase.setData('quantity', Number(e.target.value))} placeholder="Qty" />
+                            </FieldLabel>
+                            <FieldLabel label="Harga beli" help="Harga modal per satuan dari supplier. Nilai ini juga memperbarui harga beli produk.">
+                                <TextInput type="number" value={purchase.data.unit_cost} onChange={(e) => purchase.setData('unit_cost', Number(e.target.value))} placeholder="Harga beli" />
+                            </FieldLabel>
+                            <FieldLabel label="Biaya tambahan" help="Biaya lain di transaksi pembelian, misalnya ongkir atau administrasi. Akan masuk ke total pembelian.">
+                                <TextInput type="number" value={purchase.data.extra_cost} onChange={(e) => purchase.setData('extra_cost', Number(e.target.value))} placeholder="Biaya tambahan" />
+                            </FieldLabel>
+                            <FieldLabel label="Dibayar" help="Nominal yang sudah dibayar ke supplier. Jika kurang dari total, sisanya tercatat sebagai hutang.">
+                                <TextInput type="number" value={purchase.data.paid_amount} onChange={(e) => purchase.setData('paid_amount', Number(e.target.value))} placeholder="Dibayar" />
+                            </FieldLabel>
                         </div>
-                        <TextInput value={purchase.data.reference_number} onChange={(e) => purchase.setData('reference_number', e.target.value)} placeholder="Nomor referensi" />
+                        <FieldLabel label="Nomor referensi" help="Nomor invoice/nota dari supplier atau kode pembelian internal. Boleh dikosongkan.">
+                            <TextInput value={purchase.data.reference_number} onChange={(e) => purchase.setData('reference_number', e.target.value)} placeholder="Nomor referensi" />
+                        </FieldLabel>
                         <Button disabled={purchase.processing} className="w-full">Simpan Pembelian</Button>
                     </form>
                     <form onSubmit={(e) => { e.preventDefault(); supplier.post('/suppliers', { onSuccess: () => supplier.reset() }); }} className="mt-4 border-t border-[var(--atk-border)] pt-3">
                         <h2 className="mb-2 text-sm font-semibold">Supplier Baru</h2>
                         <div className="space-y-2">
-                            <TextInput placeholder="Nama supplier" value={supplier.data.name} onChange={(e) => supplier.setData('name', e.target.value)} />
-                            <TextInput placeholder="Telepon" value={supplier.data.phone} onChange={(e) => supplier.setData('phone', e.target.value)} />
-                            <TextInput placeholder="Alamat" value={supplier.data.address} onChange={(e) => supplier.setData('address', e.target.value)} />
+                            <FieldLabel label="Nama supplier" help="Nama toko, distributor, atau pemasok tempat pembelian barang.">
+                                <TextInput placeholder="Nama supplier" value={supplier.data.name} onChange={(e) => supplier.setData('name', e.target.value)} />
+                            </FieldLabel>
+                            <FieldLabel label="Telepon supplier" help="Nomor kontak supplier untuk pemesanan ulang atau konfirmasi hutang.">
+                                <TextInput placeholder="Telepon" value={supplier.data.phone} onChange={(e) => supplier.setData('phone', e.target.value)} />
+                            </FieldLabel>
+                            <FieldLabel label="Alamat supplier" help="Alamat supplier jika diperlukan untuk catatan pembelian atau kunjungan toko.">
+                                <TextInput placeholder="Alamat" value={supplier.data.address} onChange={(e) => supplier.setData('address', e.target.value)} />
+                            </FieldLabel>
                             <Button disabled={supplier.processing} className="w-full">Tambah Supplier</Button>
                         </div>
                     </form>

@@ -1,7 +1,7 @@
 import { Head, router } from '@inertiajs/react';
 import { useState } from 'react';
 import AuthenticatedLayout from '../../Layouts/AuthenticatedLayout';
-import { Button, Card, DenseTable, PageHeader, StatCard, TextInput, rupiah } from '../../Components/UI';
+import { Button, Card, DenseTable, FieldLabel, PageHeader, StatCard, TextInput, rupiah } from '../../Components/UI';
 
 export default function ReportsIndex({ filters, summary, topProducts, dailySales }) {
     const [from, setFrom] = useState(filters.from);
@@ -16,9 +16,13 @@ export default function ReportsIndex({ filters, summary, topProducts, dailySales
         <AuthenticatedLayout>
             <Head title="Laporan" />
             <PageHeader title="Laporan Penjualan & Keuangan" description="Penjualan, laba kotor, hutang/piutang, produk dan jasa terlaris." />
-            <form onSubmit={apply} className="mb-3 flex flex-wrap gap-2">
-                <TextInput className="w-40" type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
-                <TextInput className="w-40" type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+            <form onSubmit={apply} className="mb-3 flex flex-wrap items-end gap-2">
+                <FieldLabel label="Tanggal mulai" help="Awal periode laporan. Data penjualan dan pembelian dihitung mulai tanggal ini." className="w-40">
+                    <TextInput type="date" value={from} onChange={(e) => setFrom(e.target.value)} />
+                </FieldLabel>
+                <FieldLabel label="Tanggal akhir" help="Akhir periode laporan. Data pada tanggal ini ikut dihitung dalam laporan." className="w-40">
+                    <TextInput type="date" value={to} onChange={(e) => setTo(e.target.value)} />
+                </FieldLabel>
                 <Button>Terapkan</Button>
             </form>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">

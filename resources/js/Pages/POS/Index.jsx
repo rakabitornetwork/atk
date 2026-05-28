@@ -1,17 +1,8 @@
 import { Head, useForm } from '@inertiajs/react';
 import { Search, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { Button, Card, PageHeader, Select, TextInput, rupiah } from '../../Components/UI';
+import { Button, Card, FieldLabel, PageHeader, Select, TextInput, rupiah } from '../../Components/UI';
 import AuthenticatedLayout from '../../Layouts/AuthenticatedLayout';
-
-function FieldLabel({ label, children }) {
-    return (
-        <label className="block">
-            <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[var(--atk-muted)]">{label}</span>
-            {children}
-        </label>
-    );
-}
 
 export default function POSIndex({ products, services, customers }) {
     const [query, setQuery] = useState('');
@@ -74,13 +65,15 @@ export default function POSIndex({ products, services, customers }) {
         <AuthenticatedLayout>
             <Head title="POS Kasir" />
             <PageHeader title="POS Kasir High-Density" description="Cari produk ATK atau jasa, masukkan cart, lalu cetak struk thermal atau invoice A4." />
-            <form onSubmit={submit} className="grid gap-3 xl:grid-cols-[1fr_25rem]">
+            <form onSubmit={submit} className="grid min-w-0 gap-3 xl:grid-cols-[minmax(0,1fr)_25rem]">
                 <div className="space-y-3">
                     <Card>
-                        <div className="relative">
-                            <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-[var(--atk-muted)]" />
-                            <TextInput className="pl-7" placeholder="Cari SKU, barcode, produk, atau jasa..." value={query} onChange={(e) => setQuery(e.target.value)} />
-                        </div>
+                        <FieldLabel label="Cari item" help="Cari produk ATK atau jasa berdasarkan nama, SKU, barcode, atau kode jasa. Klik hasil pencarian untuk memasukkannya ke cart.">
+                            <div className="relative">
+                                <Search className="absolute left-2 top-2 h-3.5 w-3.5 text-[var(--atk-muted)]" />
+                                <TextInput className="pl-7" placeholder="Cari SKU, barcode, produk, atau jasa..." value={query} onChange={(e) => setQuery(e.target.value)} />
+                            </div>
+                        </FieldLabel>
                         <div className="atk-scrollbar mt-3 grid max-h-[38rem] gap-2 overflow-y-auto sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
                             {filtered.map((item) => (
                                 <button key={`${item.type}-${item.id}`} type="button" onClick={() => addItem(item)} className="rounded-lg border border-[var(--atk-border)] bg-white/60 p-2 text-left transition hover:border-violet-400 dark:bg-slate-950/50">
@@ -99,10 +92,12 @@ export default function POSIndex({ products, services, customers }) {
                 <Card className="xl:sticky xl:top-16 xl:self-start">
                     <h2 className="mb-2 text-sm font-semibold">Cart Transaksi</h2>
                     <div className="space-y-2">
-                        <Select value={data.customer_id} onChange={(e) => setData('customer_id', e.target.value)}>
-                            <option value="">Pelanggan umum</option>
-                            {customers.map((customer) => <option key={customer.id} value={customer.id}>{customer.name} {customer.phone ? `- ${customer.phone}` : ''}</option>)}
-                        </Select>
+                        <FieldLabel label="Pelanggan" help="Pilih pelanggan jika transaksi ingin tersimpan ke riwayat pelanggan atau menjadi piutang. Kosongkan untuk pembeli umum.">
+                            <Select value={data.customer_id} onChange={(e) => setData('customer_id', e.target.value)}>
+                                <option value="">Pelanggan umum</option>
+                                {customers.map((customer) => <option key={customer.id} value={customer.id}>{customer.name} {customer.phone ? `- ${customer.phone}` : ''}</option>)}
+                            </Select>
+                        </FieldLabel>
                         <div className="atk-scrollbar max-h-80 space-y-2 overflow-y-auto pr-1">
                             {cart.map((line) => (
                                 <div key={line.key} className="rounded-lg border border-[var(--atk-border)] p-2">
@@ -110,14 +105,14 @@ export default function POSIndex({ products, services, customers }) {
                                         <p className="text-xs font-semibold">{line.name}</p>
                                         <button type="button" onClick={() => setCart((current) => current.filter((item) => item.key !== line.key))} className="text-rose-300"><Trash2 className="h-3.5 w-3.5" /></button>
                                     </div>
-                                    <div className="mt-2 grid grid-cols-3 gap-1">
-                                        <FieldLabel label={`Qty (${line.unit || 'unit'})`}>
+                                    <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
+                                        <FieldLabel label={`Qty (${line.unit || 'unit'})`} help="Jumlah barang atau layanan yang dijual pada baris ini. Untuk jasa bisa diisi jumlah halaman, lembar, atau paket sesuai satuan.">
                                             <TextInput type="number" min="0.01" step="0.01" value={line.quantity} onChange={(e) => updateLine(line.key, { quantity: Number(e.target.value) })} />
                                         </FieldLabel>
-                                        <FieldLabel label="Harga">
+                                        <FieldLabel label="Harga" help="Harga jual per satuan untuk item ini. Bisa diubah manual jika ada harga khusus.">
                                             <TextInput type="number" min="0" value={line.unit_price} onChange={(e) => updateLine(line.key, { unit_price: Number(e.target.value) })} />
                                         </FieldLabel>
-                                        <FieldLabel label="Diskon">
+                                        <FieldLabel label="Diskon" help="Potongan khusus untuk item ini saja. Nilainya mengurangi subtotal baris item, bukan total seluruh nota.">
                                             <TextInput type="number" min="0" value={line.discount} onChange={(e) => updateLine(line.key, { discount: Number(e.target.value) })} />
                                         </FieldLabel>
                                     </div>
@@ -126,14 +121,14 @@ export default function POSIndex({ products, services, customers }) {
                             ))}
                             {cart.length === 0 ? <p className="rounded-lg border border-dashed border-[var(--atk-border)] py-8 text-center text-[11px] text-[var(--atk-muted)]">Cart masih kosong.</p> : null}
                         </div>
-                        <div className="grid grid-cols-2 gap-2">
-                            <FieldLabel label="Diskon nota">
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                            <FieldLabel label="Diskon nota" help="Potongan untuk total seluruh transaksi setelah semua subtotal item dijumlahkan. Cocok untuk promo toko, pembulatan, atau diskon belanja keseluruhan.">
                                 <TextInput type="number" min="0" placeholder="0" value={data.discount} onChange={(e) => setData('discount', Number(e.target.value))} />
                             </FieldLabel>
-                            <FieldLabel label="Nominal dibayar">
+                            <FieldLabel label="Nominal dibayar" help="Jumlah uang yang diterima dari pelanggan. Jika kurang dari total, sisanya tercatat sebagai piutang.">
                                 <TextInput type="number" min="0" placeholder="0" value={data.paid_amount} onChange={(e) => setData('paid_amount', Number(e.target.value))} />
                             </FieldLabel>
-                            <FieldLabel label="Metode bayar">
+                            <FieldLabel label="Metode bayar" help="Pilih cara pembayaran utama: tunai, transfer, QRIS, atau tempo untuk transaksi belum lunas.">
                                 <Select value={data.payment_method} onChange={(e) => setData('payment_method', e.target.value)}>
                                     <option value="cash">Tunai</option>
                                     <option value="transfer">Transfer</option>
@@ -141,11 +136,11 @@ export default function POSIndex({ products, services, customers }) {
                                     <option value="tempo">Tempo</option>
                                 </Select>
                             </FieldLabel>
-                            <FieldLabel label="Referensi bayar">
+                            <FieldLabel label="Referensi bayar" help="Nomor referensi transfer, ID QRIS, catatan bukti bayar, atau nomor transaksi eksternal. Boleh kosong untuk tunai.">
                                 <TextInput placeholder="Ref pembayaran" value={data.payment_reference} onChange={(e) => setData('payment_reference', e.target.value)} />
                             </FieldLabel>
                         </div>
-                        <FieldLabel label="Catatan transaksi/jasa">
+                        <FieldLabel label="Catatan transaksi/jasa" help="Isi instruksi tambahan, detail file, deadline, atau catatan khusus pelanggan untuk transaksi ini.">
                             <TextInput placeholder="Catatan transaksi/jasa" value={data.notes} onChange={(e) => setData('notes', e.target.value)} />
                         </FieldLabel>
                         <div className="rounded-lg bg-black/[0.04] p-2 text-xs dark:bg-white/[0.04]">

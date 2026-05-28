@@ -41,7 +41,8 @@ body {
         radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.16), transparent 28rem),
         var(--atk-bg);
     color: var(--atk-text);
-    font-size: 12px;
+    font-size: 13px;
+    overflow-x: hidden;
 }
 
 .atk-scrollbar::-webkit-scrollbar {

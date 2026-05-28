@@ -1,6 +1,6 @@
 import { Head, useForm } from '@inertiajs/react';
 import AuthenticatedLayout from '../../Layouts/AuthenticatedLayout';
-import { Button, Card, DenseTable, PageHeader, Select, TextInput, dateTime } from '../../Components/UI';
+import { Button, Card, DenseTable, FieldLabel, PageHeader, Select, TextInput, dateTime } from '../../Components/UI';
 
 export default function UsersIndex({ users, roles }) {
     const { data, setData, post, processing, reset, errors } = useForm({
@@ -18,12 +18,20 @@ export default function UsersIndex({ users, roles }) {
                 <Card>
                     <h2 className="mb-2 text-sm font-semibold">Tambah Akun</h2>
                     <form onSubmit={(e) => { e.preventDefault(); post('/users', { onSuccess: () => reset() }); }} className="space-y-2">
-                        <TextInput placeholder="Nama" value={data.name} onChange={(e) => setData('name', e.target.value)} />
-                        <TextInput type="email" placeholder="Email" value={data.email} onChange={(e) => setData('email', e.target.value)} />
-                        <TextInput type="password" placeholder="Password minimal 8 karakter" value={data.password} onChange={(e) => setData('password', e.target.value)} />
-                        <Select value={data.role} onChange={(e) => setData('role', e.target.value)}>
-                            {roles.map((role) => <option key={role} value={role}>{role}</option>)}
-                        </Select>
+                        <FieldLabel label="Nama pengguna" help="Nama orang yang akan tampil di header aplikasi, audit log, dan riwayat transaksi.">
+                            <TextInput placeholder="Nama" value={data.name} onChange={(e) => setData('name', e.target.value)} />
+                        </FieldLabel>
+                        <FieldLabel label="Email login" help="Email yang dipakai pengguna untuk masuk ke aplikasi melalui halaman /admin. Harus unik.">
+                            <TextInput type="email" placeholder="Email" value={data.email} onChange={(e) => setData('email', e.target.value)} />
+                        </FieldLabel>
+                        <FieldLabel label="Password" help="Password awal pengguna. Minimal 8 karakter, gunakan kombinasi yang mudah diingat tetapi tidak mudah ditebak.">
+                            <TextInput type="password" placeholder="Password minimal 8 karakter" value={data.password} onChange={(e) => setData('password', e.target.value)} />
+                        </FieldLabel>
+                        <FieldLabel label="Role akses" help="Admin dapat mengakses semua menu. Kasir fokus POS dan riwayat transaksi. Operator disiapkan untuk akses operasional terbatas.">
+                            <Select value={data.role} onChange={(e) => setData('role', e.target.value)}>
+                                {roles.map((role) => <option key={role} value={role}>{role}</option>)}
+                            </Select>
+                        </FieldLabel>
                         {Object.values(errors).length ? <p className="text-[10px] text-rose-300">{Object.values(errors)[0]}</p> : null}
                         <Button disabled={processing} className="w-full">Simpan Akun</Button>
                     </form>

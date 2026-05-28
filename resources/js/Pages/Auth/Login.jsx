@@ -1,6 +1,6 @@
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { LockKeyhole } from 'lucide-react';
-import { Button, Card, TextInput } from '../../Components/UI';
+import { Button, Card, FieldLabel, TextInput } from '../../Components/UI';
 import ThemeToggle from '../../Components/ThemeToggle';
 
 export default function Login() {
@@ -32,20 +32,20 @@ export default function Login() {
                 </div>
                 {flash?.error ? <div className="mb-3 rounded-lg border border-rose-400/30 bg-rose-500/10 px-3 py-2 text-xs text-rose-300">{flash.error}</div> : null}
                 <form onSubmit={submit} className="space-y-3">
-                    <label className="block">
-                        <span className="mb-1 block text-[11px] font-semibold text-[var(--atk-muted)]">Email</span>
+                    <FieldLabel label="Email" help="Masukkan email akun admin, kasir, atau operator yang sudah dibuat di sistem.">
                         <TextInput type="email" value={data.email} onChange={(e) => setData('email', e.target.value)} autoFocus />
                         {errors.email ? <p className="mt-1 text-[10px] text-rose-300">{errors.email}</p> : null}
-                    </label>
-                    <label className="block">
-                        <span className="mb-1 block text-[11px] font-semibold text-[var(--atk-muted)]">Password</span>
+                    </FieldLabel>
+                    <FieldLabel label="Password" help="Masukkan password akun. Jika lupa, minta admin utama membuat ulang akun atau mengganti password.">
                         <TextInput type="password" value={data.password} onChange={(e) => setData('password', e.target.value)} />
                         {errors.password ? <p className="mt-1 text-[10px] text-rose-300">{errors.password}</p> : null}
-                    </label>
-                    <label className="flex items-center gap-2 text-[11px] text-[var(--atk-muted)]">
+                    </FieldLabel>
+                    <div className="flex items-center gap-2 text-[11px] text-[var(--atk-muted)]">
                         <input type="checkbox" checked={data.remember} onChange={(e) => setData('remember', e.target.checked)} />
-                        Ingat sesi login
-                    </label>
+                        <FieldLabel label="Ingat sesi login" help="Aktifkan jika komputer ini aman dipakai sendiri. Sesi login akan disimpan lebih lama sehingga tidak perlu sering masuk ulang.">
+                            <span className="sr-only">Ingat sesi login</span>
+                        </FieldLabel>
+                    </div>
                     <Button disabled={processing} className="w-full">{processing ? 'Masuk...' : 'Masuk'}</Button>
                 </form>
             </Card>
