@@ -39,7 +39,7 @@ export default function AuthenticatedLayout({ children }) {
     }
 
     return (
-        <div className="min-h-screen text-[var(--atk-text)]">
+        <div className="min-h-screen min-w-0 max-w-full overflow-x-hidden text-[var(--atk-text)]">
             <aside className="fixed inset-y-0 left-0 z-30 hidden w-52 border-r border-[var(--atk-border)] bg-[var(--atk-surface)] p-2 backdrop-blur-xl lg:block">
                 <Link href="/dashboard" className="mb-2 flex h-10 items-center rounded-xl bg-violet-500/15 px-2 ring-1 ring-violet-400/20">
                     <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-600 text-xs font-bold text-white">ATK</div>
@@ -58,7 +58,7 @@ export default function AuthenticatedLayout({ children }) {
                 </nav>
             </aside>
 
-            <div className="lg:pl-52">
+            <div className="min-w-0 max-w-full lg:pl-52">
                 <header className="sticky top-0 z-20 border-b border-[var(--atk-border)] bg-[var(--atk-surface)]/90 px-3 py-2 backdrop-blur-xl">
                     <div className="flex items-center justify-between gap-2">
                         <div className="flex min-w-0 items-center gap-2">
@@ -138,7 +138,7 @@ export default function AuthenticatedLayout({ children }) {
                             </nav>
                         </aside>
                 </div>
-                <main className="p-3">
+                <main className="min-w-0 max-w-full overflow-x-hidden p-3">
                     <Flash />
                     {children}
                 </main>

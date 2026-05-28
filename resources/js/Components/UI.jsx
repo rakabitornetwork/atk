@@ -50,8 +50,8 @@ export function StatCard({ label, value, hint }) {
 
 export function DenseTable({ columns, rows, keyField = 'id', empty = 'Belum ada data.' }) {
     return (
-        <div className="atk-scrollbar max-w-full overflow-x-auto rounded-lg border border-[var(--atk-border)]">
-            <table className="w-full min-w-[34rem] border-collapse text-left text-xs sm:min-w-[42rem]">
+        <div className="atk-scrollbar w-full min-w-0 max-w-full overflow-x-auto rounded-lg border border-[var(--atk-border)]">
+            <table className="w-full min-w-[30rem] border-collapse text-left text-xs sm:min-w-[42rem]">
                 <thead>
                     <tr className="border-b border-[var(--atk-border)] bg-black/[0.03] dark:bg-white/[0.04]">
                         {columns.map((column) => (

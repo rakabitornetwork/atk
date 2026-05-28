@@ -20,7 +20,7 @@ export default function ServicesIndex({ services, orders }) {
         <AuthenticatedLayout>
             <Head title="Jasa Pengetikan" />
             <PageHeader title="Jasa Pengetikan & Layanan" description="Kelola tarif layanan dan status pekerjaan jasa." />
-            <div className="grid min-w-0 gap-3 xl:grid-cols-[22rem_minmax(0,1fr)]">
+            <div className="grid w-full min-w-0 max-w-full gap-3 xl:grid-cols-[22rem_minmax(0,1fr)]">
                 <Card>
                     <h2 className="mb-2 text-sm font-semibold">Tambah Layanan</h2>
                     <form onSubmit={submit} className="space-y-2">
@@ -44,8 +44,8 @@ export default function ServicesIndex({ services, orders }) {
                         <Button disabled={processing} className="w-full">Simpan Layanan</Button>
                     </form>
                 </Card>
-                <div className="space-y-3">
-                    <Card>
+                <div className="min-w-0 max-w-full space-y-3">
+                    <Card className="overflow-hidden">
                         <h2 className="mb-2 text-sm font-semibold">Daftar Layanan</h2>
                         <DenseTable rows={services} columns={[
                             { key: 'code', label: 'Kode' },
@@ -55,7 +55,7 @@ export default function ServicesIndex({ services, orders }) {
                             { key: 'estimated_minutes', label: 'Estimasi' },
                         ]} />
                     </Card>
-                    <Card>
+                    <Card className="overflow-hidden">
                         <h2 className="mb-2 text-sm font-semibold">Order Jasa</h2>
                         <DenseTable rows={orders} columns={[
                             { key: 'order_number', label: 'Order' },
