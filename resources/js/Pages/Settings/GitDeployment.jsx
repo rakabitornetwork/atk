@@ -6,7 +6,13 @@ import AuthenticatedLayout from '../../Layouts/AuthenticatedLayout';
 
 export default function GitDeployment({ status }) {
     const { flash } = usePage().props;
-    const [options, setOptions] = useState({ run_composer: true, run_npm: true, run_migrate: true, run_optimize: true });
+    const [options, setOptions] = useState({ run_composer: false, run_migrate: false, run_npm: true, run_optimize: true });
+    const updateOptions = [
+        ['run_composer', 'Composer', 'Jalankan composer install setelah pull. Aktifkan jika ada perubahan dependency PHP atau package Laravel.'],
+        ['run_migrate', 'Migrate', 'Jalankan migrasi database. Aktifkan jika update membawa perubahan struktur tabel.'],
+        ['run_npm', 'NPM', 'Jalankan build frontend setelah pull. Aktifkan jika ada perubahan React, CSS, Vite, atau package npm.'],
+        ['run_optimize', 'Optimize', 'Jalankan optimasi/cache Laravel setelah update agar aplikasi produksi lebih cepat.'],
+    ];
 
     function sync() {
         if (!confirm('Jalankan update dari GitHub?')) return;
@@ -32,17 +38,12 @@ export default function GitDeployment({ status }) {
                         <dt className="text-[var(--atk-muted)]">Release Terbaru</dt><dd className="break-all">{status.remote_version || '-'}</dd>
                     </dl>
                     <div className="mt-4 grid gap-2 text-xs">
-                        {Object.keys(options).map((key) => (
+                        {updateOptions.map(([key, label, help]) => (
                             <div key={key} className="flex items-center gap-2">
                                 <input type="checkbox" checked={options[key]} onChange={(e) => setOptions((current) => ({ ...current, [key]: e.target.checked }))} />
                                 <FieldLabel
-                                    label={key.replace('run_', '').replace('_', ' ')}
-                                    help={{
-                                        run_composer: 'Jalankan composer install setelah pull. Aktifkan jika ada perubahan dependency PHP atau package Laravel.',
-                                        run_npm: 'Jalankan build frontend setelah pull. Aktifkan jika ada perubahan React, CSS, Vite, atau package npm.',
-                                        run_migrate: 'Jalankan migrasi database. Aktifkan jika update membawa perubahan struktur tabel.',
-                                        run_optimize: 'Jalankan optimasi/cache Laravel setelah update agar aplikasi produksi lebih cepat.',
-                                    }[key]}
+                                    label={label}
+                                    help={help}
                                 >
                                     <span className="sr-only">{key}</span>
                                 </FieldLabel>
