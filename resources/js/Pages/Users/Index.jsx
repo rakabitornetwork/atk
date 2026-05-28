@@ -107,12 +107,19 @@ export default function UsersIndex({ users, roles, primaryAdminEmail }) {
                                 {roles.map((role) => <option key={role} value={role}>{role}</option>)}
                             </Select>
                         ) : user.role },
-                        { key: 'password', label: 'Password', render: (user) => editingUserId === user.id ? (
-                            <div className="space-y-1">
-                                <TextInput type="password" placeholder="Kosongkan jika tidak diganti" value={editForm.data.password} onChange={(e) => editForm.setData('password', e.target.value)} />
-                                <input type="file" accept="image/*" onChange={(e) => editForm.setData('profile_photo', e.target.files?.[0] ?? null)} className="w-48 rounded border border-[var(--atk-border)] bg-white/70 px-2 py-1 text-xs text-slate-900 dark:bg-slate-950/70 dark:text-slate-100" />
-                            </div>
+                        { key: 'password', label: 'Password', className: 'w-44', tdClassName: 'w-44', render: (user) => editingUserId === user.id ? (
+                            <TextInput className="w-44" type="password" placeholder="Kosongkan" value={editForm.data.password} onChange={(e) => editForm.setData('password', e.target.value)} />
                         ) : '********' },
+                        { key: 'profile_upload', label: 'Foto baru', className: 'w-44', tdClassName: 'w-44', render: (user) => editingUserId === user.id ? (
+                            <div className="w-44">
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => editForm.setData('profile_photo', e.target.files?.[0] ?? null)}
+                                    className="block w-full rounded border border-[var(--atk-border)] bg-white/70 px-2 py-1 text-[11px] text-slate-900 file:mr-2 file:rounded file:border-0 file:bg-violet-600 file:px-2 file:py-1 file:text-[11px] file:font-semibold file:text-white dark:bg-slate-950/70 dark:text-slate-100"
+                                />
+                            </div>
+                        ) : '-' },
                         { key: 'created_at', label: 'Dibuat', render: (row) => dateTime(row.created_at) },
                         { key: 'actions', label: 'Aksi', render: (user) => editingUserId === user.id ? (
                             <div className="flex gap-1">
