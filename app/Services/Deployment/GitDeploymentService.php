@@ -25,8 +25,10 @@ class GitDeploymentService
 
         $branch = (string) config('deployment.git_branch', 'main');
         $dirtyOutput = trim($this->git(['status', '--porcelain'])['output']);
-        $local = trim($this->git(['rev-parse', '--short', 'HEAD'])['output']);
-        $remote = trim($this->git(['rev-parse', '--short', 'origin/'.$branch])['output']);
+        $localSha = trim($this->git(['rev-parse', '--short', 'HEAD'])['output']);
+        $remoteSha = trim($this->git(['rev-parse', '--short', 'origin/'.$branch])['output']);
+        $localCommitCount = (int) trim($this->git(['rev-list', '--count', 'HEAD'])['output']);
+        $remoteCommitCount = (int) trim($this->git(['rev-list', '--count', 'origin/'.$branch])['output']);
         $behind = (int) trim($this->git(['rev-list', '--count', 'HEAD..origin/'.$branch])['output']);
         $ahead = (int) trim($this->git(['rev-list', '--count', 'origin/'.$branch.'..HEAD'])['output']);
 
@@ -36,8 +38,10 @@ class GitDeploymentService
             'has_update' => $behind > 0,
             'dirty' => $dirtyOutput !== '',
             'dirty_count' => $dirtyOutput === '' ? 0 : count(explode("\n", $dirtyOutput)),
-            'local_version' => $local,
-            'remote_version' => $remote,
+            'local_version' => $this->releaseVersion($localCommitCount),
+            'remote_version' => $this->releaseVersion($remoteCommitCount),
+            'local_sha' => $localSha,
+            'remote_sha' => $remoteSha,
             'commits_ahead' => $ahead,
             'commits_behind' => $behind,
             'requires_manual_update' => $ahead > 0 && $behind > 0,
@@ -83,6 +87,11 @@ class GitDeploymentService
     private function git(array $args): array
     {
         return $this->run(['git', ...$args]);
+    }
+
+    private function releaseVersion(int $commitCount): string
+    {
+        return '1.0.'.max(0, $commitCount);
     }
 
     private function run(array $command): array

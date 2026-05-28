@@ -16,7 +16,7 @@ const nav = [
     ['Akun Pengguna', '/users', Users, 'admin'],
     ['Laporan', '/reports', BarChart3, 'admin'],
     ['Audit', '/audit', FileClock, 'admin'],
-    ['Update GitHub', '/settings/deployment', GitBranch, 'admin'],
+    ['Update Aplikasi', '/settings/deployment', GitBranch, 'admin'],
     ['Pengaturan', '/settings', Settings, 'admin'],
 ];
 
@@ -28,6 +28,14 @@ export default function AuthenticatedLayout({ children }) {
 
     function logout() {
         router.post('/logout');
+    }
+
+    function isActiveNav(href) {
+        if (href === '/settings') {
+            return current === href;
+        }
+
+        return current === href || current.startsWith(`${href}/`);
     }
 
     return (
@@ -42,7 +50,7 @@ export default function AuthenticatedLayout({ children }) {
                 </Link>
                 <nav className="atk-scrollbar h-[calc(100vh-4rem)] space-y-1 overflow-y-auto">
                     {visibleNavItems.map(([label, href, Icon]) => (
-                        <NavLink key={href} href={href} active={current === href || current.startsWith(`${href}/`)}>
+                        <NavLink key={href} href={href} active={isActiveNav(href)}>
                             <Icon className="mr-2 h-3.5 w-3.5" />
                             {label}
                         </NavLink>
@@ -121,7 +129,7 @@ export default function AuthenticatedLayout({ children }) {
                                         href={href}
                                         onClick={() => setMobileMenuOpen(false)}
                                         tabIndex={mobileMenuOpen ? 0 : -1}
-                                        className={`flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition ${current === href || current.startsWith(`${href}/`) ? 'bg-violet-600 text-white' : 'text-[var(--atk-text)] hover:bg-black/5 dark:hover:bg-white/5'}`}
+                                        className={`flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition ${isActiveNav(href) ? 'bg-violet-600 text-white' : 'text-[var(--atk-text)] hover:bg-black/5 dark:hover:bg-white/5'}`}
                                     >
                                         <Icon className="mr-2 h-4 w-4" />
                                         {label}
