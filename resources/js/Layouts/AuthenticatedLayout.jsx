@@ -141,6 +141,9 @@ export default function AuthenticatedLayout({ children }) {
                 <main className="min-w-0 max-w-full overflow-x-hidden p-3">
                     <Flash />
                     {children}
+                    <footer className="mt-6 border-t border-[var(--atk-border)] pt-3 text-center text-xs font-medium text-[var(--atk-muted)]">
+                        Made by Amon - Indramayu 2026
+                    </footer>
                 </main>
             </div>
         </div>
