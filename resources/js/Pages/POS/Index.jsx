@@ -4,6 +4,22 @@ import { useMemo, useState } from 'react';
 import { Button, Card, FieldLabel, PageHeader, Select, TextInput, rupiah } from '../../Components/UI';
 import AuthenticatedLayout from '../../Layouts/AuthenticatedLayout';
 
+function integerValue(value, min = 0) {
+    const digits = String(value ?? '').replace(/[^\d]/g, '');
+
+    if (digits === '') {
+        return min;
+    }
+
+    return Math.max(min, Number.parseInt(digits, 10));
+}
+
+function blockNonIntegerKey(event) {
+    if (['e', 'E', '+', '-', '.', ','].includes(event.key)) {
+        event.preventDefault();
+    }
+}
+
 export default function POSIndex({ products, services, customers }) {
     const [query, setQuery] = useState('');
     const [cart, setCart] = useState([]);
@@ -107,13 +123,37 @@ export default function POSIndex({ products, services, customers }) {
                                     </div>
                                     <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
                                         <FieldLabel label={`Qty (${line.unit || 'unit'})`} help="Jumlah barang atau layanan yang dijual pada baris ini. Untuk jasa bisa diisi jumlah halaman, lembar, atau paket sesuai satuan.">
-                                            <TextInput type="number" min="0.01" step="0.01" value={line.quantity} onChange={(e) => updateLine(line.key, { quantity: Number(e.target.value) })} />
+                                            <TextInput
+                                                type="number"
+                                                min="1"
+                                                step="1"
+                                                inputMode="numeric"
+                                                value={line.quantity}
+                                                onKeyDown={blockNonIntegerKey}
+                                                onChange={(e) => updateLine(line.key, { quantity: integerValue(e.target.value, 1) })}
+                                            />
                                         </FieldLabel>
                                         <FieldLabel label="Harga" help="Harga jual per satuan untuk item ini. Bisa diubah manual jika ada harga khusus.">
-                                            <TextInput type="number" min="0" value={line.unit_price} onChange={(e) => updateLine(line.key, { unit_price: Number(e.target.value) })} />
+                                            <TextInput
+                                                type="number"
+                                                min="0"
+                                                step="1"
+                                                inputMode="numeric"
+                                                value={line.unit_price}
+                                                onKeyDown={blockNonIntegerKey}
+                                                onChange={(e) => updateLine(line.key, { unit_price: integerValue(e.target.value) })}
+                                            />
                                         </FieldLabel>
                                         <FieldLabel label="Diskon" help="Potongan khusus untuk item ini saja. Nilainya mengurangi subtotal baris item, bukan total seluruh nota.">
-                                            <TextInput type="number" min="0" value={line.discount} onChange={(e) => updateLine(line.key, { discount: Number(e.target.value) })} />
+                                            <TextInput
+                                                type="number"
+                                                min="0"
+                                                step="1"
+                                                inputMode="numeric"
+                                                value={line.discount}
+                                                onKeyDown={blockNonIntegerKey}
+                                                onChange={(e) => updateLine(line.key, { discount: integerValue(e.target.value) })}
+                                            />
                                         </FieldLabel>
                                     </div>
                                     <p className="mt-1 text-right text-xs font-bold"><span className="mr-1 text-[10px] font-medium text-[var(--atk-muted)]">Subtotal item</span>{rupiah(line.quantity * line.unit_price - line.discount)}</p>
@@ -123,10 +163,28 @@ export default function POSIndex({ products, services, customers }) {
                         </div>
                         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                             <FieldLabel label="Diskon nota" help="Potongan untuk total seluruh transaksi setelah semua subtotal item dijumlahkan. Cocok untuk promo toko, pembulatan, atau diskon belanja keseluruhan.">
-                                <TextInput type="number" min="0" placeholder="0" value={data.discount} onChange={(e) => setData('discount', Number(e.target.value))} />
+                                <TextInput
+                                    type="number"
+                                    min="0"
+                                    step="1"
+                                    inputMode="numeric"
+                                    placeholder="0"
+                                    value={data.discount}
+                                    onKeyDown={blockNonIntegerKey}
+                                    onChange={(e) => setData('discount', integerValue(e.target.value))}
+                                />
                             </FieldLabel>
                             <FieldLabel label="Nominal dibayar" help="Jumlah uang yang diterima dari pelanggan. Jika kurang dari total, sisanya tercatat sebagai piutang.">
-                                <TextInput type="number" min="0" placeholder="0" value={data.paid_amount} onChange={(e) => setData('paid_amount', Number(e.target.value))} />
+                                <TextInput
+                                    type="number"
+                                    min="0"
+                                    step="1"
+                                    inputMode="numeric"
+                                    placeholder="0"
+                                    value={data.paid_amount}
+                                    onKeyDown={blockNonIntegerKey}
+                                    onChange={(e) => setData('paid_amount', integerValue(e.target.value))}
+                                />
                             </FieldLabel>
                             <FieldLabel label="Metode bayar" help="Pilih cara pembayaran utama: tunai, transfer, QRIS, atau tempo untuk transaksi belum lunas.">
                                 <Select value={data.payment_method} onChange={(e) => setData('payment_method', e.target.value)}>
