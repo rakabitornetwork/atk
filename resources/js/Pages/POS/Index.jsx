@@ -4,6 +4,15 @@ import { useMemo, useState } from 'react';
 import { Button, Card, PageHeader, Select, TextInput, rupiah } from '../../Components/UI';
 import AuthenticatedLayout from '../../Layouts/AuthenticatedLayout';
 
+function FieldLabel({ label, children }) {
+    return (
+        <label className="block">
+            <span className="mb-1 block text-[10px] font-semibold uppercase tracking-wider text-[var(--atk-muted)]">{label}</span>
+            {children}
+        </label>
+    );
+}
+
 export default function POSIndex({ products, services, customers }) {
     const [query, setQuery] = useState('');
     const [cart, setCart] = useState([]);
@@ -102,27 +111,43 @@ export default function POSIndex({ products, services, customers }) {
                                         <button type="button" onClick={() => setCart((current) => current.filter((item) => item.key !== line.key))} className="text-rose-300"><Trash2 className="h-3.5 w-3.5" /></button>
                                     </div>
                                     <div className="mt-2 grid grid-cols-3 gap-1">
-                                        <TextInput type="number" min="0.01" step="0.01" value={line.quantity} onChange={(e) => updateLine(line.key, { quantity: Number(e.target.value) })} />
-                                        <TextInput type="number" min="0" value={line.unit_price} onChange={(e) => updateLine(line.key, { unit_price: Number(e.target.value) })} />
-                                        <TextInput type="number" min="0" value={line.discount} onChange={(e) => updateLine(line.key, { discount: Number(e.target.value) })} />
+                                        <FieldLabel label={`Qty (${line.unit || 'unit'})`}>
+                                            <TextInput type="number" min="0.01" step="0.01" value={line.quantity} onChange={(e) => updateLine(line.key, { quantity: Number(e.target.value) })} />
+                                        </FieldLabel>
+                                        <FieldLabel label="Harga">
+                                            <TextInput type="number" min="0" value={line.unit_price} onChange={(e) => updateLine(line.key, { unit_price: Number(e.target.value) })} />
+                                        </FieldLabel>
+                                        <FieldLabel label="Diskon">
+                                            <TextInput type="number" min="0" value={line.discount} onChange={(e) => updateLine(line.key, { discount: Number(e.target.value) })} />
+                                        </FieldLabel>
                                     </div>
-                                    <p className="mt-1 text-right text-xs font-bold">{rupiah(line.quantity * line.unit_price - line.discount)}</p>
+                                    <p className="mt-1 text-right text-xs font-bold"><span className="mr-1 text-[10px] font-medium text-[var(--atk-muted)]">Subtotal item</span>{rupiah(line.quantity * line.unit_price - line.discount)}</p>
                                 </div>
                             ))}
                             {cart.length === 0 ? <p className="rounded-lg border border-dashed border-[var(--atk-border)] py-8 text-center text-[11px] text-[var(--atk-muted)]">Cart masih kosong.</p> : null}
                         </div>
                         <div className="grid grid-cols-2 gap-2">
-                            <TextInput type="number" min="0" placeholder="Diskon nota" value={data.discount} onChange={(e) => setData('discount', Number(e.target.value))} />
-                            <TextInput type="number" min="0" placeholder="Dibayar" value={data.paid_amount} onChange={(e) => setData('paid_amount', Number(e.target.value))} />
-                            <Select value={data.payment_method} onChange={(e) => setData('payment_method', e.target.value)}>
-                                <option value="cash">Tunai</option>
-                                <option value="transfer">Transfer</option>
-                                <option value="qris">QRIS</option>
-                                <option value="tempo">Tempo</option>
-                            </Select>
-                            <TextInput placeholder="Ref pembayaran" value={data.payment_reference} onChange={(e) => setData('payment_reference', e.target.value)} />
+                            <FieldLabel label="Diskon nota">
+                                <TextInput type="number" min="0" placeholder="0" value={data.discount} onChange={(e) => setData('discount', Number(e.target.value))} />
+                            </FieldLabel>
+                            <FieldLabel label="Nominal dibayar">
+                                <TextInput type="number" min="0" placeholder="0" value={data.paid_amount} onChange={(e) => setData('paid_amount', Number(e.target.value))} />
+                            </FieldLabel>
+                            <FieldLabel label="Metode bayar">
+                                <Select value={data.payment_method} onChange={(e) => setData('payment_method', e.target.value)}>
+                                    <option value="cash">Tunai</option>
+                                    <option value="transfer">Transfer</option>
+                                    <option value="qris">QRIS</option>
+                                    <option value="tempo">Tempo</option>
+                                </Select>
+                            </FieldLabel>
+                            <FieldLabel label="Referensi bayar">
+                                <TextInput placeholder="Ref pembayaran" value={data.payment_reference} onChange={(e) => setData('payment_reference', e.target.value)} />
+                            </FieldLabel>
                         </div>
-                        <TextInput placeholder="Catatan transaksi/jasa" value={data.notes} onChange={(e) => setData('notes', e.target.value)} />
+                        <FieldLabel label="Catatan transaksi/jasa">
+                            <TextInput placeholder="Catatan transaksi/jasa" value={data.notes} onChange={(e) => setData('notes', e.target.value)} />
+                        </FieldLabel>
                         <div className="rounded-lg bg-black/[0.04] p-2 text-xs dark:bg-white/[0.04]">
                             <div className="flex justify-between"><span>Subtotal</span><strong>{rupiah(subtotal)}</strong></div>
                             <div className="flex justify-between"><span>Total</span><strong>{rupiah(total)}</strong></div>
