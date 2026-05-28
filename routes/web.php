@@ -31,6 +31,9 @@ Route::middleware('auth')->group(function (): void {
     Route::middleware('admin')->group(function (): void {
         Route::get('/users', [OperationsController::class, 'users'])->name('users.index');
         Route::post('/users', [OperationsController::class, 'storeUser'])->name('users.store');
+        Route::put('/users/{user}', [OperationsController::class, 'updateUser'])->name('users.update');
+        Route::post('/users/{user}/update', [OperationsController::class, 'updateUser'])->name('users.update.upload');
+        Route::delete('/users/{user}', [OperationsController::class, 'destroyUser'])->name('users.destroy');
 
         Route::get('/products', [ProductController::class, 'index'])->name('products.index');
         Route::post('/products', [ProductController::class, 'store'])->name('products.store');

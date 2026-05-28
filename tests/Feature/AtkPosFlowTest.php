@@ -67,4 +67,28 @@ class AtkPosFlowTest extends TestCase
         $this->assertDatabaseHas('products', ['id' => $productId, 'stock' => 8]);
         $this->assertDatabaseHas('service_orders', ['title' => 'Jasa Ketik', 'status' => 'pending']);
     }
+
+    public function test_admin_can_update_user_but_cannot_delete_primary_admin(): void
+    {
+        config(['atk.admin_email' => 'primary@example.test']);
+        $admin = User::factory()->create(['email' => 'primary@example.test', 'role' => User::ROLE_ADMIN]);
+        $cashier = User::factory()->create(['role' => User::ROLE_CASHIER]);
+
+        $this->actingAs($admin)->put(route('users.update', $cashier), [
+            'name' => 'Kasir Baru',
+            'email' => 'kasir-baru@example.test',
+            'password' => '',
+            'role' => User::ROLE_OPERATOR,
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('users', [
+            'id' => $cashier->id,
+            'name' => 'Kasir Baru',
+            'email' => 'kasir-baru@example.test',
+            'role' => User::ROLE_OPERATOR,
+        ]);
+
+        $this->actingAs($admin)->delete(route('users.destroy', $admin))->assertRedirect();
+        $this->assertDatabaseHas('users', ['id' => $admin->id]);
+    }
 }

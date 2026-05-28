@@ -38,17 +38,44 @@ export default function AuthenticatedLayout({ children }) {
         return current === href || current.startsWith(`${href}/`);
     }
 
+    function Avatar({ className = 'h-10 w-10' }) {
+        return (
+            <div className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-violet-600 text-sm font-bold text-white ${className}`}>
+                {auth.user?.profile_photo_url ? (
+                    <img src={auth.user.profile_photo_url} alt={auth.user.name} className="h-full w-full object-cover" />
+                ) : (
+                    auth.user?.name?.charAt(0) ?? 'A'
+                )}
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen min-w-0 max-w-full overflow-x-hidden text-[var(--atk-text)]">
             <aside className="fixed inset-y-0 left-0 z-30 hidden w-52 border-r border-[var(--atk-border)] bg-[var(--atk-surface)] p-2 backdrop-blur-xl lg:block">
                 <Link href="/dashboard" className="mb-2 flex h-10 items-center rounded-xl bg-violet-500/15 px-2 ring-1 ring-violet-400/20">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-600 text-xs font-bold text-white">ATK</div>
+                    <div className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-lg bg-violet-600 text-xs font-bold text-white">
+                        {app.logo_icon_url ? <img src={app.logo_icon_url} alt="Logo icon" className="h-full w-full object-cover" /> : 'ATK'}
+                    </div>
                     <div className="ml-2 min-w-0">
-                        <p className="truncate text-xs font-bold">{app.store_name}</p>
+                        {app.navbar_logo_url ? <img src={app.navbar_logo_url} alt={app.store_name} className="h-5 max-w-full object-contain" /> : <p className="truncate text-xs font-bold">{app.store_name}</p>}
                         <p className="text-[10px] text-[var(--atk-muted)]">Premium POS</p>
                     </div>
                 </Link>
-                <nav className="atk-scrollbar h-[calc(100vh-4rem)] space-y-1 overflow-y-auto">
+                <div className="mb-2 rounded-xl border border-[var(--atk-border)] bg-black/[0.03] p-2 dark:bg-white/[0.03]">
+                    <div className="flex items-center gap-2">
+                        <Avatar />
+                        <div className="min-w-0">
+                            <p className="truncate text-xs font-bold">{auth.user?.name}</p>
+                            <p className="truncate text-[10px] text-[var(--atk-muted)]">{auth.user?.email}</p>
+                        </div>
+                    </div>
+                    <div className="mt-2 flex items-center justify-between gap-2 text-[10px] uppercase tracking-wider text-[var(--atk-muted)]">
+                        <span>Status akun</span>
+                        <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 font-semibold text-emerald-300">{auth.user?.role}</span>
+                    </div>
+                </div>
+                <nav className="atk-scrollbar h-[calc(100vh-9.5rem)] space-y-1 overflow-y-auto">
                     {visibleNavItems.map(([label, href, Icon]) => (
                         <NavLink key={href} href={href} active={isActiveNav(href)}>
                             <Icon className="mr-2 h-3.5 w-3.5" />
@@ -106,9 +133,11 @@ export default function AuthenticatedLayout({ children }) {
                         >
                             <div className="mb-3 flex items-center justify-between gap-2">
                                 <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="flex min-w-0 items-center rounded-xl bg-violet-500/15 px-2 py-2 ring-1 ring-violet-400/20">
-                                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-600 text-xs font-bold text-white">ATK</div>
+                                    <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-violet-600 text-xs font-bold text-white">
+                                        {app.logo_icon_url ? <img src={app.logo_icon_url} alt="Logo icon" className="h-full w-full object-cover" /> : 'ATK'}
+                                    </div>
                                     <div className="ml-2 min-w-0">
-                                        <p className="truncate text-sm font-bold">{app.store_name}</p>
+                                        {app.navbar_logo_url ? <img src={app.navbar_logo_url} alt={app.store_name} className="h-6 max-w-full object-contain" /> : <p className="truncate text-sm font-bold">{app.store_name}</p>}
                                         <p className="text-[11px] text-[var(--atk-muted)]">Premium POS</p>
                                     </div>
                                 </Link>
@@ -121,6 +150,19 @@ export default function AuthenticatedLayout({ children }) {
                                 >
                                     <X className="h-5 w-5" />
                                 </button>
+                            </div>
+                            <div className="mb-3 rounded-xl border border-[var(--atk-border)] bg-black/[0.03] p-2 dark:bg-white/[0.03]">
+                                <div className="flex items-center gap-2">
+                                    <Avatar />
+                                    <div className="min-w-0">
+                                        <p className="truncate text-sm font-bold">{auth.user?.name}</p>
+                                        <p className="truncate text-xs text-[var(--atk-muted)]">{auth.user?.email}</p>
+                                    </div>
+                                </div>
+                                <div className="mt-2 flex items-center justify-between gap-2 text-[10px] uppercase tracking-wider text-[var(--atk-muted)]">
+                                    <span>Status akun</span>
+                                    <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 font-semibold text-emerald-300">{auth.user?.role}</span>
+                                </div>
                             </div>
                             <nav className="atk-scrollbar min-h-0 flex-1 space-y-1 overflow-y-auto">
                                 {visibleNavItems.map(([label, href, Icon]) => (

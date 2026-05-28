@@ -3,6 +3,9 @@
 namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -12,6 +15,9 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $user = $request->user();
+        $settings = Schema::hasTable('store_settings')
+            ? DB::table('store_settings')->first()
+            : null;
 
         return [
             ...parent::share($request),
@@ -21,6 +27,7 @@ class HandleInertiaRequests extends Middleware
                     'name' => $user->name,
                     'email' => $user->email,
                     'role' => $user->role,
+                    'profile_photo_url' => $user->profile_photo_url,
                 ] : null,
                 'is_admin' => $user?->isAdmin() ?? false,
                 'is_cashier' => $user?->isCashier() ?? false,
@@ -32,8 +39,11 @@ class HandleInertiaRequests extends Middleware
             ],
             'app' => [
                 'name' => config('app.name', 'ATK POS'),
-                'store_name' => config('atk.store_name'),
+                'store_name' => $settings?->store_name ?? config('atk.store_name'),
                 'default_theme' => config('atk.default_theme'),
+                'logo_url' => $settings?->logo_path ? Storage::disk('public')->url($settings->logo_path) : null,
+                'logo_icon_url' => $settings?->logo_icon_path ? Storage::disk('public')->url($settings->logo_icon_path) : null,
+                'navbar_logo_url' => $settings?->navbar_logo_path ? Storage::disk('public')->url($settings->navbar_logo_path) : null,
             ],
         ];
     }

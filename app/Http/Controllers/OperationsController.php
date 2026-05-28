@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -17,8 +18,19 @@ class OperationsController extends Controller
     public function users(): Response
     {
         return Inertia::render('Users/Index', [
-            'users' => User::query()->orderBy('name')->get(['id', 'name', 'email', 'role', 'created_at']),
+            'users' => User::query()
+                ->orderBy('name')
+                ->get(['id', 'name', 'email', 'role', 'profile_photo_path', 'created_at'])
+                ->map(fn (User $user): array => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'role' => $user->role,
+                    'profile_photo_url' => $user->profile_photo_url,
+                    'created_at' => $user->created_at,
+                ]),
             'roles' => [User::ROLE_ADMIN, User::ROLE_CASHIER, User::ROLE_OPERATOR],
+            'primaryAdminEmail' => config('atk.admin_email'),
         ]);
     }
 
@@ -29,6 +41,7 @@ class OperationsController extends Controller
             'email' => ['required', 'email', 'max:160', 'unique:users,email'],
             'password' => ['required', 'string', 'min:8'],
             'role' => ['required', Rule::in([User::ROLE_ADMIN, User::ROLE_CASHIER, User::ROLE_OPERATOR])],
+            'profile_photo' => ['nullable', 'image', 'max:2048'],
         ]);
 
         $user = User::query()->create([
@@ -36,12 +49,65 @@ class OperationsController extends Controller
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
             'role' => $data['role'],
+            'profile_photo_path' => $request->file('profile_photo')?->store('profile-photos', 'public'),
             'email_verified_at' => now(),
         ]);
 
         Activity::log($request, 'user.created', 'user', $user->id, ['email' => $user->email, 'role' => $user->role]);
 
         return back()->with('success', 'Akun pengguna ditambahkan.');
+    }
+
+    public function updateUser(Request $request, User $user): RedirectResponse
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:160'],
+            'email' => ['required', 'email', 'max:160', Rule::unique('users', 'email')->ignore($user->id)],
+            'password' => ['nullable', 'string', 'min:8'],
+            'role' => ['required', Rule::in([User::ROLE_ADMIN, User::ROLE_CASHIER, User::ROLE_OPERATOR])],
+            'profile_photo' => ['nullable', 'image', 'max:2048'],
+        ]);
+
+        $payload = [
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'role' => $data['role'],
+        ];
+
+        if (! empty($data['password'])) {
+            $payload['password'] = Hash::make($data['password']);
+        }
+
+        if ($request->hasFile('profile_photo')) {
+            if ($user->profile_photo_path) {
+                Storage::disk('public')->delete($user->profile_photo_path);
+            }
+            $payload['profile_photo_path'] = $request->file('profile_photo')->store('profile-photos', 'public');
+        }
+
+        $user->update($payload);
+        Activity::log($request, 'user.updated', 'user', $user->id, ['email' => $user->email, 'role' => $user->role]);
+
+        return back()->with('success', 'Akun pengguna diperbarui.');
+    }
+
+    public function destroyUser(Request $request, User $user): RedirectResponse
+    {
+        if ($user->email === (string) config('atk.admin_email')) {
+            return back()->with('error', 'Pengguna utama admin tidak boleh dihapus.');
+        }
+
+        if ($request->user()?->id === $user->id) {
+            return back()->with('error', 'Akun yang sedang login tidak boleh menghapus dirinya sendiri.');
+        }
+
+        Activity::log($request, 'user.deleted', 'user', $user->id, ['email' => $user->email, 'role' => $user->role]);
+        if ($user->profile_photo_path) {
+            Storage::disk('public')->delete($user->profile_photo_path);
+        }
+        $user->delete();
+
+        return back()->with('success', 'Akun pengguna dihapus.');
     }
 
     public function services(): Response
@@ -299,8 +365,15 @@ class OperationsController extends Controller
 
     public function settings(): Response
     {
+        $settings = DB::table('store_settings')->first();
+
         return Inertia::render('Settings/Index', [
-            'settings' => DB::table('store_settings')->first(),
+            'settings' => $settings ? [
+                ...((array) $settings),
+                'logo_url' => $settings->logo_path ? Storage::disk('public')->url($settings->logo_path) : null,
+                'logo_icon_url' => $settings->logo_icon_path ? Storage::disk('public')->url($settings->logo_icon_path) : null,
+                'navbar_logo_url' => $settings->navbar_logo_path ? Storage::disk('public')->url($settings->navbar_logo_path) : null,
+            ] : null,
         ]);
     }
 
@@ -314,10 +387,29 @@ class OperationsController extends Controller
             'default_paper_size' => ['required', Rule::in(['thermal_58', 'thermal_80', 'a4'])],
             'invoice_prefix' => ['required', 'string', 'max:12'],
             'theme' => ['required', Rule::in(['dark', 'light'])],
+            'logo' => ['nullable', 'image', 'max:2048'],
+            'logo_icon' => ['nullable', 'image', 'max:1024'],
+            'navbar_logo' => ['nullable', 'image', 'max:2048'],
         ]);
 
-        DB::table('store_settings')->updateOrInsert(['id' => 1], [...$data, 'updated_at' => now(), 'created_at' => now()]);
-        Activity::log($request, 'settings.updated', 'store_settings', 1, $data);
+        $settings = DB::table('store_settings')->where('id', 1)->first();
+        $payload = collect($data)->except(['logo', 'logo_icon', 'navbar_logo'])->all();
+
+        foreach ([
+            'logo' => 'logo_path',
+            'logo_icon' => 'logo_icon_path',
+            'navbar_logo' => 'navbar_logo_path',
+        ] as $input => $column) {
+            if ($request->hasFile($input)) {
+                if ($settings?->{$column}) {
+                    Storage::disk('public')->delete($settings->{$column});
+                }
+                $payload[$column] = $request->file($input)->store('branding', 'public');
+            }
+        }
+
+        DB::table('store_settings')->updateOrInsert(['id' => 1], [...$payload, 'updated_at' => now(), 'created_at' => $settings?->created_at ?? now()]);
+        Activity::log($request, 'settings.updated', 'store_settings', 1, collect($payload)->except(['logo_path', 'logo_icon_path', 'navbar_logo_path'])->all());
 
         return back()->with('success', 'Pengaturan toko disimpan.');
     }
