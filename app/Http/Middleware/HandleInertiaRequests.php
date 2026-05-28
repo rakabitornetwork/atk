@@ -5,7 +5,6 @@ namespace App\Http\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -41,10 +40,19 @@ class HandleInertiaRequests extends Middleware
                 'name' => config('app.name', 'ATK POS'),
                 'store_name' => $settings?->store_name ?? config('atk.store_name'),
                 'default_theme' => config('atk.default_theme'),
-                'logo_url' => $settings?->logo_path ? Storage::disk('public')->url($settings->logo_path) : null,
-                'logo_icon_url' => $settings?->logo_icon_path ? Storage::disk('public')->url($settings->logo_icon_path) : null,
-                'navbar_logo_url' => $settings?->navbar_logo_path ? Storage::disk('public')->url($settings->navbar_logo_path) : null,
+                'logo_url' => $this->publicStorageUrl($settings?->logo_path),
+                'logo_icon_url' => $this->publicStorageUrl($settings?->logo_icon_path),
+                'navbar_logo_url' => $this->publicStorageUrl($settings?->navbar_logo_path),
             ],
         ];
+    }
+
+    private function publicStorageUrl(?string $path): ?string
+    {
+        if (! $path) {
+            return null;
+        }
+
+        return '/storage/'.ltrim($path, '/');
     }
 }

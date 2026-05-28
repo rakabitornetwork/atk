@@ -88,7 +88,7 @@ export default function UsersIndex({ users, roles, primaryAdminEmail }) {
                     <DenseTable rows={users} columns={[
                         { key: 'photo', label: 'Foto', render: (user) => (
                             <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-violet-600 text-xs font-bold text-white">
-                                {user.profile_photo_url ? <img src={user.profile_photo_url} alt={user.name} className="h-full w-full object-cover" /> : user.name?.charAt(0)}
+                                {user.profile_photo_url ? <img src={user.profile_photo_url} alt={user.name} onError={(event) => { event.currentTarget.style.display = 'none'; }} className="h-full w-full object-cover" /> : user.name?.charAt(0)}
                             </div>
                         ) },
                         { key: 'name', label: 'Nama', render: (user) => editingUserId === user.id ? (

@@ -370,9 +370,9 @@ class OperationsController extends Controller
         return Inertia::render('Settings/Index', [
             'settings' => $settings ? [
                 ...((array) $settings),
-                'logo_url' => $settings->logo_path ? Storage::disk('public')->url($settings->logo_path) : null,
-                'logo_icon_url' => $settings->logo_icon_path ? Storage::disk('public')->url($settings->logo_icon_path) : null,
-                'navbar_logo_url' => $settings->navbar_logo_path ? Storage::disk('public')->url($settings->navbar_logo_path) : null,
+                'logo_url' => $this->publicStorageUrl($settings->logo_path),
+                'logo_icon_url' => $this->publicStorageUrl($settings->logo_icon_path),
+                'navbar_logo_url' => $this->publicStorageUrl($settings->navbar_logo_path),
             ] : null,
         ]);
     }
@@ -425,5 +425,14 @@ class OperationsController extends Controller
                 ->latest('activity_logs.created_at')
                 ->paginate(80),
         ]);
+    }
+
+    private function publicStorageUrl(?string $path): ?string
+    {
+        if (! $path) {
+            return null;
+        }
+
+        return '/storage/'.ltrim($path, '/');
     }
 }

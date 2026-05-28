@@ -42,7 +42,7 @@ export default function AuthenticatedLayout({ children }) {
         return (
             <div className={`flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-violet-600 text-sm font-bold text-white ${className}`}>
                 {auth.user?.profile_photo_url ? (
-                    <img src={auth.user.profile_photo_url} alt={auth.user.name} className="h-full w-full object-cover" />
+                    <img src={auth.user.profile_photo_url} alt={auth.user.name} onError={(event) => { event.currentTarget.style.display = 'none'; }} className="h-full w-full object-cover" />
                 ) : (
                     auth.user?.name?.charAt(0) ?? 'A'
                 )}
@@ -55,10 +55,10 @@ export default function AuthenticatedLayout({ children }) {
             <aside className="fixed inset-y-0 left-0 z-30 hidden w-52 border-r border-[var(--atk-border)] bg-[var(--atk-surface)] p-2 backdrop-blur-xl lg:block">
                 <Link href="/dashboard" className="mb-2 flex h-10 items-center rounded-xl bg-violet-500/15 px-2 ring-1 ring-violet-400/20">
                     <div className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-lg bg-violet-600 text-xs font-bold text-white">
-                        {app.logo_icon_url ? <img src={app.logo_icon_url} alt="Logo icon" className="h-full w-full object-cover" /> : 'ATK'}
+                        {app.logo_icon_url ? <img src={app.logo_icon_url} alt="Logo icon" onError={(event) => { event.currentTarget.style.display = 'none'; }} className="h-full w-full object-cover" /> : 'ATK'}
                     </div>
                     <div className="ml-2 min-w-0">
-                        {app.navbar_logo_url ? <img src={app.navbar_logo_url} alt={app.store_name} className="h-5 max-w-full object-contain" /> : <p className="truncate text-xs font-bold">{app.store_name}</p>}
+                        {app.navbar_logo_url ? <img src={app.navbar_logo_url} alt={app.store_name} onError={(event) => { event.currentTarget.style.display = 'none'; }} className="h-5 max-w-full object-contain" /> : <p className="truncate text-xs font-bold">{app.store_name}</p>}
                         <p className="text-[10px] text-[var(--atk-muted)]">Premium POS</p>
                     </div>
                 </Link>
@@ -134,10 +134,10 @@ export default function AuthenticatedLayout({ children }) {
                             <div className="mb-3 flex items-center justify-between gap-2">
                                 <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="flex min-w-0 items-center rounded-xl bg-violet-500/15 px-2 py-2 ring-1 ring-violet-400/20">
                                     <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-violet-600 text-xs font-bold text-white">
-                                        {app.logo_icon_url ? <img src={app.logo_icon_url} alt="Logo icon" className="h-full w-full object-cover" /> : 'ATK'}
+                                        {app.logo_icon_url ? <img src={app.logo_icon_url} alt="Logo icon" onError={(event) => { event.currentTarget.style.display = 'none'; }} className="h-full w-full object-cover" /> : 'ATK'}
                                     </div>
                                     <div className="ml-2 min-w-0">
-                                        {app.navbar_logo_url ? <img src={app.navbar_logo_url} alt={app.store_name} className="h-6 max-w-full object-contain" /> : <p className="truncate text-sm font-bold">{app.store_name}</p>}
+                                        {app.navbar_logo_url ? <img src={app.navbar_logo_url} alt={app.store_name} onError={(event) => { event.currentTarget.style.display = 'none'; }} className="h-6 max-w-full object-contain" /> : <p className="truncate text-sm font-bold">{app.store_name}</p>}
                                         <p className="text-[11px] text-[var(--atk-muted)]">Premium POS</p>
                                     </div>
                                 </Link>

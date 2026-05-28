@@ -23,15 +23,15 @@ export default function SettingsIndex({ settings }) {
             <Card className="max-w-2xl">
                 <form onSubmit={(e) => { e.preventDefault(); post('/settings', { forceFormData: true }); }} className="grid gap-2 sm:grid-cols-2">
                     <FieldLabel label="Logo aplikasi" help="Logo utama aplikasi untuk branding. Cocok untuk gambar horizontal atau logo lengkap toko." className="sm:col-span-2">
-                        {settings?.logo_url ? <img src={settings.logo_url} alt="Logo aplikasi" className="mb-2 h-12 rounded border border-[var(--atk-border)] bg-white object-contain p-1" /> : null}
+                        {settings?.logo_url ? <img src={settings.logo_url} alt="Logo aplikasi" onError={(event) => { event.currentTarget.style.display = 'none'; }} className="mb-2 h-12 rounded border border-[var(--atk-border)] bg-white object-contain p-1" /> : null}
                         <input type="file" accept="image/*" onChange={(e) => setData('logo', e.target.files?.[0] ?? null)} className="w-full rounded-lg border border-[var(--atk-border)] bg-white/70 px-2.5 py-2 text-sm text-slate-900 dark:bg-slate-950/70 dark:text-slate-100" />
                     </FieldLabel>
                     <FieldLabel label="Logo icon" help="Icon kecil aplikasi. Disarankan bentuk persegi, dipakai sebagai pengganti kotak ATK jika tersedia.">
-                        {settings?.logo_icon_url ? <img src={settings.logo_icon_url} alt="Logo icon" className="mb-2 h-10 w-10 rounded-lg border border-[var(--atk-border)] bg-white object-contain p-1" /> : null}
+                        {settings?.logo_icon_url ? <img src={settings.logo_icon_url} alt="Logo icon" onError={(event) => { event.currentTarget.style.display = 'none'; }} className="mb-2 h-10 w-10 rounded-lg border border-[var(--atk-border)] bg-white object-contain p-1" /> : null}
                         <input type="file" accept="image/*" onChange={(e) => setData('logo_icon', e.target.files?.[0] ?? null)} className="w-full rounded-lg border border-[var(--atk-border)] bg-white/70 px-2.5 py-2 text-sm text-slate-900 dark:bg-slate-950/70 dark:text-slate-100" />
                     </FieldLabel>
                     <FieldLabel label="Logo navbar" help="Logo yang tampil di bagian branding sidebar/navbar. Jika kosong, sistem memakai nama toko dan icon default.">
-                        {settings?.navbar_logo_url ? <img src={settings.navbar_logo_url} alt="Logo navbar" className="mb-2 h-10 rounded border border-[var(--atk-border)] bg-white object-contain p-1" /> : null}
+                        {settings?.navbar_logo_url ? <img src={settings.navbar_logo_url} alt="Logo navbar" onError={(event) => { event.currentTarget.style.display = 'none'; }} className="mb-2 h-10 rounded border border-[var(--atk-border)] bg-white object-contain p-1" /> : null}
                         <input type="file" accept="image/*" onChange={(e) => setData('navbar_logo', e.target.files?.[0] ?? null)} className="w-full rounded-lg border border-[var(--atk-border)] bg-white/70 px-2.5 py-2 text-sm text-slate-900 dark:bg-slate-950/70 dark:text-slate-100" />
                     </FieldLabel>
                     <FieldLabel label="Nama toko" help="Nama usaha yang akan tampil di header aplikasi, struk, dan invoice.">
